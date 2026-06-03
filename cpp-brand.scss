@@ -1,0 +1,206 @@
+/*-- scss:defaults --*/
+$cpp-green: #005030;
+$cpp-gold: #FFB81C;
+$cpp-eggshell: #F2EEE8;
+$cpp-teal: #00838A;
+$cpp-black: #121212;
+$cpp-avocado: #A4D65E;
+$cpp-rose: #B52B4C;
+$cpp-green-dark: #003B2F;
+$cpp-white: #ffffff;
+
+$body-bg: $cpp-eggshell;
+$body-color: $cpp-black;
+$link-color: $cpp-teal;
+$selection-bg: $cpp-gold;
+$presentation-heading-color: $cpp-green;
+$presentation-heading-font: "Arial", "Helvetica", sans-serif;
+$font-family-sans-serif: "Arial", "Helvetica", sans-serif;
+$code-block-bg: $cpp-white;
+$code-block-border-color: #CFBAB0;
+
+/*-- scss:rules --*/
+.reveal {
+  font-size: 30px;
+}
+
+.reveal .slides {
+  text-align: left;
+}
+
+.reveal h1, .reveal h2, .reveal h3 {
+  letter-spacing: -0.02em;
+}
+
+.reveal h1 {
+  font-size: 1.85em;
+  font-weight: 850;
+  line-height: 1.05;
+  margin-bottom: 0.5em;
+  color: $cpp-green !important;
+  background-color: $cpp-gold;
+  padding: 10px;
+  border-radius: 5px;
+  margin: 1;
+}
+
+.reveal h2 {
+  font-size: 1.35em;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.45em;
+  border-bottom: 4px solid $cpp-gold;
+  padding-bottom: 0.12em;
+}
+
+.reveal h3 {
+  font-size: 1.05em;
+  font-weight: 700;
+  line-height: 1.15;
+  color: $cpp-teal;
+  margin-bottom: 0.35em;
+}
+
+/*-- Title Slide --*/
+.reveal .title-slide,
+.reveal #title-slide {
+  text-align: center;
+  background: linear-gradient(135deg, $cpp-green 0%, $cpp-green-dark 72%, $cpp-black 100%);
+  color: $cpp-eggshell;
+}
+
+.reveal .title-slide h1,
+.reveal .title-slide h2,
+.reveal .title-slide h3,
+.reveal .title-slide p,
+.reveal #title-slide h1,
+.reveal #title-slide p {
+  color: $cpp-eggshell !important;
+}
+
+.reveal .title-slide h1,
+.reveal #title-slide h1,
+.reveal #title-slide h1.title {
+  color: $cpp-eggshell !important;
+  font-size: 2.25em;
+  font-weight: 850;
+}
+
+.reveal .title-slide .subtitle,
+.reveal #title-slide .subtitle {
+  color: $cpp-gold !important;
+  font-size: 1.15em;
+  font-weight: 700;
+}
+
+/*-- Logo Water Mark --*/
+.reveal .slide-logo::after {
+  content: "Cal Poly Pomona • Applied ML";
+  position: fixed;
+  right: 28px;
+  bottom: 18px;
+  font-size: 0.42em;
+  color: $cpp-green;
+  opacity: 0.75;
+}
+
+.reveal strong {
+  color: $cpp-green;
+}
+
+/*-- Block quote --*/
+.reveal blockquote {
+  border-left: 10px solid $cpp-gold;
+  background: $cpp-white;
+  color: $cpp-green;
+  padding: 0.4em 0.7em;
+  box-shadow: none;
+}
+
+/*-- Table --*/
+.reveal table {
+  font-size: 0.72em;
+}
+
+.reveal thead th {
+  background: $cpp-green;
+  color: $cpp-eggshell;
+}
+
+.reveal tbody tr:nth-child(even) {
+  background: $cpp-white;
+}
+.reveal tbody tr:nth-child(odd) {
+  background: $cpp-eggshell;
+}
+
+/*-- callouts --*/
+.reveal .callout {
+  border-left-color: $cpp-gold !important;
+}
+
+/* Support both `callout-note` and `callout note` Quarto class variants.
+   Force darker paragraph text for readability on white backgrounds. */
+.reveal .callout-note,
+.reveal .callout-tip,
+.reveal .callout-question,
+.reveal .callout.note,
+.reveal .callout.tip,
+.reveal .callout.question {
+  background: $cpp-white !important;
+  color: $cpp-black !important;
+}
+
+.reveal .callout.note p,
+.reveal .callout.tip p,
+.reveal .callout.question p,
+.reveal .callout-note p,
+.reveal .callout-tip p,
+.reveal .callout-question p {
+  color: $cpp-black !important;
+  margin: 0;
+}
+
+.reveal code {
+  color: $cpp-rose;
+}
+
+.reveal pre code {
+  color: $cpp-black;
+}
+
+.reveal .progress {
+  color: $cpp-gold;
+}
+
+.reveal .slide-number {
+  color: $cpp-rose;
+  background: transparent;
+}
+
+/* ---- H1 section slides: dark text on gold background ---- */
+.reveal section[data-background-color="#F2EEE8"] h1 {
+  color: $cpp-green !important;
+}
+
+/* Ensure slides that set the data-background-color to the gold value
+   actually show a gold background (override theme gradients). */
+.reveal section[data-background-color="#F2EEE8"] {
+  background: $cpp-gold !important;
+  background-image: none !important;
+}
+
+/* Define a custom style for large text */
+.large-text {
+  font-size: 60px;
+}
+
+/* Define a custom style for medium text */
+.medium-text {
+  font-size: 40px;
+}
+
+/* Define a custom style for small text */
+.small-text {
+  font-size: 20px;
+}
