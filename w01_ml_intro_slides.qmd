@@ -26,6 +26,8 @@ format:
     code-copy: true
     code-fold: false
     code-overflow: wrap
+    code-link: true
+    code-tools: true
     smaller: false
     embed-resources: true
 execute:
