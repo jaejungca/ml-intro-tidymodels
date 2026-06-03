@@ -1,0 +1,910 @@
+---
+title: "Week 1: Introduction to Machine Learning for Marketing"
+subtitle: "Hands-On Lab — TMWR Chapters 1, 3, and 5"
+author: "Jae Jung"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right-body
+    toc-float: true
+    number-sections: true
+    theme: cosmo
+    code-fold: false
+    code-tools: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Overview
+
+This document accompanies Week 1 of IBM 6540. It covers the key ideas and
+hands-on coding from three chapters of *Tidy Modeling with R* (TMWR):
+
+- **Chapter 1** — Software for Modeling: what models are, why tidymodels exists
+- **Chapter 3** — A Review of R Modeling Fundamentals: base R modeling, the formula interface
+- **Chapter 5** — Spending Our Data: train/test splits, stratification, the data budget
+
+By the end of this lab, you should be able to:
+
+1. Describe the three types of models (descriptive, inferential, predictive)
+2. Fit a model using base R syntax and interpret its output with tidy tools
+3. Split a dataset into training and testing sets using `rsample`
+4. Explain why the data budget matters and when to use stratified splits
+
+---
+
+# Setup
+
+## Install and load packages
+
+If you have not yet installed tidymodels, run the install line once (it is
+commented out below so it does not run every time you render):
+
+```{r}
+#| label: install
+# Run once if needed:
+# install.packages("tidymodels")
+# install.packages("broom")
+# install.packages("janitor")
+
+library(tidymodels) # loads rsample, parsnip, recipes, workflows, yardstick, broom
+library(tidyverse) # loads dplyr, ggplot2, tidyr, readr, etc.
+```
+
+Verify your tidymodels version:
+
+```{r}
+#| label: version-check
+packageVersion("tidymodels")
+```
+
+---
+
+# TMWR Chapter 1 — Software for Modeling
+
+## Types of models
+
+TMWR Chapter 1 introduces a useful taxonomy. Before writing any code, it is
+worth asking: **what kind of model are we building, and why?**
+
+| Type | Goal | Example |
+|------|------|---------|
+| **Descriptive** | Illustrate or summarize data | Trend line on a chart |
+| **Inferential** | Test a hypothesis, estimate an effect | Does ad spend cause sales? |
+| **Predictive** | Generate accurate predictions for new data | Which customers will churn? |
+
+In this course, we focus on **predictive models** — but good predictive
+modeling still requires understanding your data descriptively and sometimes
+thinking carefully about inference.
+
+## The modeling process
+
+TMWR describes modeling as an **iterative process**, not a one-shot task:
+
+```
+Exploratory data analysis
+        ↓
+Feature engineering
+        ↓
+Model fitting
+        ↓
+Model evaluation
+        ↓
+Refine (repeat as needed)
+        ↓
+Final model on test data
+```
+
+::: callout-important
+**Key principle from Chapter 1:** The test set should be used **only once** —
+at the very end — to get an honest estimate of how well the model generalizes.
+Every other evaluation should use the training data only.
+:::
+
+## Why tidymodels?
+
+Before tidymodels, every modeling package in R had its own syntax, its own
+way of making predictions, and its own output format. Compare:
+
+```{r}
+#| label: why-tidymodels
+#| eval: false
+# Base R linear model
+lm(sale_price ~ gr_liv_area, data = ames_train)
+
+# randomForest package
+randomForest(sale_price ~ gr_liv_area, data = ames_train)
+
+# glmnet package (requires matrix input, not a formula)
+glmnet(x = model.matrix(~gr_liv_area, ames_train), y = ames_train$sale_price)
+```
+
+Every package has different syntax, different prediction functions, and
+different output structures. tidymodels solves this by providing a **unified
+interface** regardless of the underlying algorithm.
+
+---
+
+# TMWR Chapter 3 — R Modeling Fundamentals
+
+## The formula interface
+
+The `~` (tilde) operator is central to modeling in R. It creates a
+**formula** that separates the outcome from the predictors:
+
+```
+outcome ~ predictor1 + predictor2 + predictor3
+```
+
+Let's explore this with the built-in `mtcars` dataset as a warm-up before
+moving to marketing data.
+
+```{r}
+#| label: formula-basics
+# Look at the data
+glimpse(mtcars)
+```
+
+```{r}
+#| label: simple-lm
+# Fit a simple linear regression using base R
+mpg_fit <- lm(mpg ~ wt + hp + cyl, data = mtcars)
+
+# The default summary
+summary(mpg_fit)
+```
+
+Notice that `summary()` gives us a lot of output, but it is not easy to work
+with programmatically — the output is printed text, not a tidy data frame.
+
+## Tidying model output with `broom`
+
+The `broom` package (included in tidymodels) solves this. It provides three
+functions that turn model output into tidy tibbles:
+
+| Function | What it returns |
+|----------|----------------|
+| `tidy()` | Coefficient-level statistics |
+| `glance()` | Model-level statistics (R², AIC, etc.) |
+| `augment()` | Row-level statistics (fitted values, residuals) |
+
+```{r}
+#| label: broom-tidy
+# Coefficient-level output
+tidy(mpg_fit)
+```
+
+```{r}
+#| label: broom-glance
+# Model-level output
+glance(mpg_fit)
+```
+
+```{r}
+#| label: broom-augment
+# Row-level output: fitted values and residuals
+augment(mpg_fit) |>
+  select(mpg, .fitted, .resid) |>
+  head(10)
+```
+
+::: callout-tip
+`tidy()`, `glance()`, and `augment()` work on many model types — not just
+`lm()`. This is one of the core benefits of the tidymodels ecosystem.
+:::
+
+## The formula interface — more options
+
+The formula interface has powerful shorthand:
+
+```{r}
+#| label: formula-options
+#| eval: false
+# Include all predictors
+lm(mpg ~ ., data = mtcars)
+
+# Exclude one predictor
+lm(mpg ~ . - carb, data = mtcars)
+
+# Interaction term
+lm(mpg ~ wt * hp, data = mtcars) # includes wt, hp, and wt:hp
+
+# Explicit interaction only
+lm(mpg ~ wt + hp + wt:hp, data = mtcars)
+
+# Polynomial term
+lm(mpg ~ wt + I(wt^2), data = mtcars)
+
+# Log transformation of predictor
+lm(mpg ~ log(wt) + hp, data = mtcars)
+```
+
+## ✏️ Practice 3.1 — Explore base R modeling
+
+Use the `mtcars` dataset to answer these questions:
+
+```{r}
+#| label: practice-3-1
+# 1. Fit a model predicting mpg from wt alone
+fit_simple <- lm(mpg ~ wt, data = mtcars)
+
+# Use tidy() to see the coefficients
+tidy(fit_simple)
+```
+
+```{r}
+#| label: practice-3-1b
+# 2. Use glance() to check model fit
+glance(fit_simple)
+```
+
+```{r}
+#| label: practice-3-1c
+# 3. Plot fitted values vs. residuals
+augment(fit_simple) |>
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point(color = "#005030", alpha = 0.7) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "#FFB81C") +
+  labs(
+    title = "Fitted Values vs. Residuals",
+    x = "Fitted values",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+::: callout-note
+**Your turn:** Try adding `hp` and `cyl` to the model. Does R² improve?
+Does the residual plot look better or worse? What does that tell you?
+:::
+
+## A marketing dataset — customer churn
+
+Let's switch from `mtcars` to a more relevant marketing dataset. We will
+simulate a customer dataset that mirrors the kinds of data you would encounter
+in practice:
+
+```{r}
+#| label: create-customer-data
+set.seed(42)
+n <- 1000
+
+customer_data <- tibble(
+  customer_id = 1:n,
+  tenure = sample(1:60, n, replace = TRUE),
+  monthly_spend = round(rnorm(n, mean = 85, sd = 25), 2),
+  num_products = sample(
+    1:5,
+    n,
+    replace = TRUE,
+    prob = c(0.3, 0.3, 0.2, 0.1, 0.1)
+  ),
+  num_complaints = rpois(n, lambda = 0.5),
+  last_login_days = sample(1:90, n, replace = TRUE),
+  region = sample(c("West", "East", "South", "Midwest"), n, replace = TRUE),
+  churn = factor(
+    ifelse(
+      0.05 *
+        num_complaints +
+        0.02 * last_login_days -
+        0.015 * tenure -
+        0.005 * monthly_spend +
+        rnorm(n, 0, 0.5) >
+        0.3,
+      "yes",
+      "no"
+    )
+  )
+)
+
+glimpse(customer_data)
+```
+
+```{r}
+#| label: churn-rate
+# Check overall churn rate
+customer_data |>
+  count(churn) |>
+  mutate(pct = n / sum(n) * 100)
+```
+
+## ✏️ Practice 3.2 — Fit a model on marketing data
+
+```{r}
+#| label: practice-3-2a
+# 1. Fit a linear model predicting monthly_spend from tenure and num_products
+spend_fit <- lm(
+  monthly_spend ~ tenure + num_products + region,
+  data = customer_data
+)
+
+tidy(spend_fit)
+```
+
+```{r}
+#| label: practice-3-2b
+# 2. Check model quality
+glance(spend_fit)
+```
+
+```{r}
+#| label: practice-3-2c
+# 3. Visualize residuals
+augment(spend_fit) |>
+  ggplot(aes(x = .fitted, y = .resid)) +
+  geom_point(alpha = 0.3, color = "#005030") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "#FFB81C") +
+  labs(
+    title = "Residuals: Monthly Spend Model",
+    x = "Fitted values ($)",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+```
+
+::: callout-note
+**Your turn:** Add `num_complaints` and `last_login_days` as predictors.
+What happens to R²? Does every predictor appear significant? What might this
+tell you about the data generating process we used to simulate the data?
+:::
+
+---
+
+# TMWR Chapter 5 — Spending Our Data
+
+## The data budget concept
+
+Chapter 5 introduces one of the most important ideas in applied ML:
+
+> *We have a finite amount of data. Every time we use data to make a modeling
+> decision, we "spend" some of its ability to give us unbiased estimates.*
+
+The solution is to **split the data** before doing any modeling:
+
+- **Training set** — used for everything: exploration, feature engineering,
+  model fitting, hyperparameter tuning
+- **Test set** — used **once**, at the very end, to estimate real-world
+  performance
+
+```{r}
+#| label: split-diagram
+#| echo: false
+tibble(
+  Set = c("Training (~80%)", "Testing (~20%)"),
+  Purpose = c(
+    "Fit model, tune parameters, make preprocessing decisions",
+    "Final honest estimate of model performance — used once"
+  ),
+  Size = c("800 rows", "200 rows")
+) |>
+  knitr::kable(caption = "Data budget for our 1,000-row customer dataset")
+```
+
+## Basic train/test split with `rsample`
+
+The `rsample` package (part of tidymodels) makes splitting straightforward:
+
+```{r}
+#| label: basic-split
+library(rsample)
+
+set.seed(123) # Always set a seed for reproducibility
+
+# 80% training, 20% testing
+customer_split <- initial_split(customer_data, prop = 0.80)
+
+customer_split
+```
+
+```{r}
+#| label: extract-sets
+# Extract the training and testing sets
+customer_train <- training(customer_split)
+customer_test <- testing(customer_split)
+
+# Verify sizes
+cat("Training rows:", nrow(customer_train), "\n")
+cat("Testing rows: ", nrow(customer_test), "\n")
+cat("Total:        ", nrow(customer_train) + nrow(customer_test), "\n")
+```
+
+## Stratified splitting
+
+Our churn variable is **imbalanced** — only about 20% of customers churn.
+A random split might give us very different churn rates in training vs. testing.
+
+First, let's see what happens without stratification:
+
+```{r}
+#| label: unstratified-check
+set.seed(123)
+
+# Without stratification
+split_no_strata <- initial_split(customer_data, prop = 0.80)
+train_no_strata <- training(split_no_strata)
+test_no_strata <- testing(split_no_strata)
+
+cat("Churn rate in full data:\n")
+customer_data |> count(churn) |> mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+```{r}
+#| label: unstratified-check2
+cat("Churn rate in training (no strata):\n")
+train_no_strata |> count(churn) |> mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+```{r}
+#| label: unstratified-check3
+cat("Churn rate in testing (no strata):\n")
+test_no_strata |> count(churn) |> mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+Now with stratification:
+
+```{r}
+#| label: stratified-split
+set.seed(123)
+
+# With stratification on the outcome variable
+customer_split_strat <- initial_split(
+  customer_data,
+  prop = 0.80,
+  strata = churn
+) # key argument
+
+customer_train <- training(customer_split_strat)
+customer_test <- testing(customer_split_strat)
+
+cat("Churn rate in training (stratified):\n")
+customer_train |> count(churn) |> mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+```{r}
+#| label: stratified-split2
+cat("Churn rate in testing (stratified):\n")
+customer_test |> count(churn) |> mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+::: callout-tip
+**Rule of thumb:** Always use `strata =` when your outcome is a category with
+imbalanced classes (e.g. churn, conversion, fraud). For regression outcomes,
+stratification is less critical but can still help ensure consistent
+distributions.
+:::
+
+## Visualizing the split
+
+It is good practice to verify that your training and testing sets have similar
+distributions for key variables:
+
+```{r}
+#| label: split-viz
+# Compare distributions of monthly_spend across splits
+bind_rows(
+  customer_train |> mutate(set = "Training"),
+  customer_test |> mutate(set = "Testing")
+) |>
+  ggplot(aes(x = monthly_spend, fill = set)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("Training" = "#005030", "Testing" = "#FFB81C")) +
+  labs(
+    title = "Distribution of Monthly Spend: Training vs. Testing",
+    x = "Monthly Spend ($)",
+    y = "Density",
+    fill = "Dataset"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: split-viz2
+# Compare tenure distributions
+bind_rows(
+  customer_train |> mutate(set = "Training"),
+  customer_test |> mutate(set = "Testing")
+) |>
+  ggplot(aes(x = tenure, fill = set)) +
+  geom_histogram(alpha = 0.6, bins = 20, position = "identity") +
+  scale_fill_manual(values = c("Training" = "#005030", "Testing" = "#FFB81C")) +
+  labs(
+    title = "Distribution of Tenure: Training vs. Testing",
+    x = "Tenure (months)",
+    y = "Count",
+    fill = "Dataset"
+  ) +
+  theme_minimal()
+```
+
+## The validation set
+
+Sometimes you want a **third** split — a validation set — for tuning
+hyperparameters without touching the test set:
+
+```{r}
+#| label: validation-split
+set.seed(123)
+
+# Three-way split: 60% train, 20% validation, 20% test
+customer_val_split <- initial_validation_split(
+  customer_data,
+  prop = c(0.6, 0.2),
+  strata = churn
+)
+
+customer_val_split
+```
+
+```{r}
+#| label: validation-extract
+train_val <- training(customer_val_split)
+val_set <- validation(customer_val_split)
+test_val <- testing(customer_val_split)
+
+cat("Training:   ", nrow(train_val), "rows\n")
+cat("Validation: ", nrow(val_set), "rows\n")
+cat("Testing:    ", nrow(test_val), "rows\n")
+```
+
+::: callout-note
+We will use **cross-validation** (TMWR Chapter 10) as a more efficient
+alternative to a separate validation set in later weeks.
+:::
+
+## ✏️ Practice 5.1 — Splitting your own data
+
+Work through the following steps:
+
+```{r}
+#| label: practice-5-1a
+# Step 1: Set a seed for reproducibility
+set.seed(2024)
+
+# Step 2: Create a stratified 80/20 split on churn
+# YOUR CODE HERE
+practice_split <- initial_split(customer_data, prop = 0.80, strata = churn)
+
+# Step 3: Extract training and testing sets
+practice_train <- training(practice_split)
+practice_test <- testing(practice_split)
+
+# Step 4: Verify the split sizes
+cat("Training rows:", nrow(practice_train), "\n")
+cat("Testing rows: ", nrow(practice_test), "\n")
+```
+
+```{r}
+#| label: practice-5-1b
+# Step 5: Verify churn rates are similar in both sets
+practice_train |>
+  count(churn) |>
+  mutate(pct = round(n / sum(n) * 100, 1), set = "Training") |>
+  bind_rows(
+    practice_test |>
+      count(churn) |>
+      mutate(pct = round(n / sum(n) * 100, 1), set = "Testing")
+  ) |>
+  select(set, churn, n, pct)
+```
+
+```{r}
+#| label: practice-5-1c
+# Step 6: Compare distributions of a key predictor across splits
+# Try changing 'last_login_days' to other variables
+bind_rows(
+  practice_train |> mutate(set = "Training"),
+  practice_test |> mutate(set = "Testing")
+) |>
+  ggplot(aes(x = last_login_days, fill = set)) +
+  geom_density(alpha = 0.5) +
+  scale_fill_manual(values = c("Training" = "#005030", "Testing" = "#FFB81C")) +
+  labs(
+    title = "Distribution of Last Login Days: Training vs. Testing",
+    x = "Days since last login",
+    y = "Density",
+    fill = "Dataset"
+  ) +
+  theme_minimal()
+```
+
+## ✏️ Practice 5.2 — What goes wrong without stratification?
+
+This exercise illustrates the risk of imbalanced splits:
+
+```{r}
+#| label: practice-5-2
+# Create a very small imbalanced dataset
+set.seed(99)
+small_imbalanced <- tibble(
+  x = rnorm(200),
+  target = factor(sample(
+    c("rare", "common"),
+    200,
+    replace = TRUE,
+    prob = c(0.05, 0.95)
+  ))
+)
+
+cat("Full dataset class distribution:\n")
+small_imbalanced |> count(target) |> mutate(pct = round(n / sum(n) * 100, 1))
+```
+
+```{r}
+#| label: practice-5-2b
+# Split WITHOUT stratification 10 times and record rare class % in test set
+set.seed(1)
+no_strata_results <- map_dfr(1:10, function(i) {
+  sp <- initial_split(small_imbalanced, prop = 0.8)
+  tibble(
+    trial = i,
+    pct_rare = mean(testing(sp)$target == "rare") * 100,
+    stratified = "No"
+  )
+})
+
+# Split WITH stratification 10 times
+strata_results <- map_dfr(1:10, function(i) {
+  sp <- initial_split(small_imbalanced, prop = 0.8, strata = target)
+  tibble(
+    trial = i,
+    pct_rare = mean(testing(sp)$target == "rare") * 100,
+    stratified = "Yes"
+  )
+})
+
+bind_rows(no_strata_results, strata_results) |>
+  ggplot(aes(x = factor(trial), y = pct_rare, fill = stratified)) +
+  geom_col(position = "dodge") +
+  geom_hline(yintercept = 5, linetype = "dashed", color = "gray40") +
+  scale_fill_manual(values = c("No" = "#B52B4C", "Yes" = "#005030")) +
+  labs(
+    title = "% of Rare Class in Test Set Across 10 Splits",
+    subtitle = "Dashed line = true proportion (5%). Stratified splits are more consistent.",
+    x = "Trial",
+    y = "% Rare class in test set",
+    fill = "Stratified?"
+  ) +
+  theme_minimal()
+```
+
+::: callout-important
+**Takeaway:** Without stratification, some test sets may have very few (or
+even zero) instances of the rare class. This makes performance estimates
+unreliable. Always stratify when classes are imbalanced.
+:::
+
+---
+
+# Putting It Together — A First End-to-End Example
+
+Now let's combine everything from Chapters 1, 3, and 5 into a simple but
+complete modeling workflow. We will use the training data only for fitting
+and save the test set for the end.
+
+## Step 1 — Split the data
+
+```{r}
+#| label: e2e-split
+set.seed(123)
+
+final_split <- initial_split(customer_data, prop = 0.80, strata = churn)
+final_train <- training(final_split)
+final_test <- testing(final_split)
+
+cat("Training:", nrow(final_train), "rows\n")
+cat("Testing: ", nrow(final_test), "rows\n")
+```
+
+## Step 2 — Explore the training data only
+
+::: callout-warning
+All exploratory analysis should use **training data only**. If you explore the
+test set and let that influence your modeling decisions, you are leaking
+information and your final performance estimate will be optimistic.
+:::
+
+```{r}
+#| label: e2e-explore
+# Churn rate by number of complaints
+final_train |>
+  group_by(num_complaints) |>
+  summarise(
+    n = n(),
+    churn_rate = mean(churn == "yes") * 100
+  ) |>
+  filter(n >= 10)
+```
+
+```{r}
+#| label: e2e-explore2
+# Distribution of tenure by churn status
+final_train |>
+  ggplot(aes(x = tenure, fill = churn)) +
+  geom_density(alpha = 0.6) +
+  scale_fill_manual(values = c("no" = "#005030", "yes" = "#B52B4C")) +
+  labs(
+    title = "Tenure Distribution by Churn Status (Training Data)",
+    x = "Tenure (months)",
+    y = "Density",
+    fill = "Churned?"
+  ) +
+  theme_minimal()
+```
+
+## Step 3 — Fit a model on training data
+
+```{r}
+#| label: e2e-fit
+# Logistic regression using base R (we will use parsnip next week)
+churn_fit <- glm(
+  churn ~ tenure +
+    monthly_spend +
+    num_products +
+    num_complaints +
+    last_login_days,
+  data = final_train,
+  family = binomial
+)
+
+tidy(churn_fit)
+```
+
+```{r}
+#| label: e2e-glance
+glance(churn_fit)
+```
+
+## Step 4 — Evaluate on the test set (once!)
+
+```{r}
+#| label: e2e-evaluate
+# Generate predictions on the test set
+test_predictions <- augment(
+  churn_fit,
+  newdata = final_test,
+  type.predict = "response"
+) |>
+  mutate(
+    .pred_class = factor(ifelse(.fitted > 0.5, "yes", "no"))
+  )
+
+# Confusion matrix
+conf_mat_result <- conf_mat(
+  test_predictions,
+  truth = churn,
+  estimate = .pred_class
+)
+
+conf_mat_result
+```
+
+```{r}
+#| label: e2e-metrics
+# Accuracy
+accuracy(test_predictions, truth = churn, estimate = .pred_class)
+```
+
+::: callout-note
+We are using this simple threshold (0.5) for illustration. In later weeks
+we will learn how to choose thresholds based on marketing decision context
+and how to evaluate models more rigorously using resampling.
+:::
+
+---
+
+# Chapter Summaries
+
+## Chapter 1 takeaways
+
+- Models can be **descriptive**, **inferential**, or **predictive** — know
+  which type you need before you start
+- Good modeling software should be **consistent**, **safe**, and
+  **expressive** — tidymodels is designed with these principles
+- Modeling is an **iterative process**, not a linear one
+
+## Chapter 3 takeaways
+
+- The R formula interface (`~`) is powerful and expressive
+- Base R model output is hard to work with — `broom` functions (`tidy()`,
+  `glance()`, `augment()`) solve this
+- tidymodels provides a **unified interface** across model types so you do
+  not need to learn different syntax for every algorithm
+
+## Chapter 5 takeaways
+
+- The **data budget**: every use of data for a decision "spends" some of its
+  ability to give unbiased estimates
+- Always split into **training** and **testing** before any modeling
+- Use **stratified splits** when outcome classes are imbalanced
+- Never use the test set more than once — doing so leads to overfitting to
+  the test data
+
+---
+
+# Exercises
+
+Complete these before the next class.
+
+## Exercise 1 — Broom practice
+
+Using the `customer_data` dataset (before splitting):
+
+a. Fit a linear regression predicting `monthly_spend` from `tenure`,
+   `num_products`, and `region`
+b. Use `tidy()` to extract coefficients. Which predictors are significant
+   at the 0.05 level?
+c. Use `glance()` to check R². Is the model a good fit?
+d. Use `augment()` and ggplot2 to create a residual plot. Do you see any
+   patterns?
+
+```{r}
+#| label: exercise-1
+#| eval: false
+# YOUR CODE HERE
+spend_model <- lm(___ ~ ___ + ___ + ___, data = customer_data)
+tidy(___)
+glance(___)
+augment(___) |>
+  ggplot(aes(x = ___, y = ___)) +
+  geom_point()
+```
+
+## Exercise 2 — Data splitting
+
+Using the `customer_data` dataset:
+
+a. Create a **70/30** stratified split on `churn`
+b. Verify that the churn rate is similar in both sets
+c. Check whether the distribution of `last_login_days` looks similar in
+   training and testing
+
+```{r}
+#| label: exercise-2
+#| eval: false
+set.seed(456)
+
+# YOUR CODE HERE
+ex2_split <- initial_split(customer_data, prop = ___, strata = ___)
+ex2_train <- training(___)
+ex2_test <- testing(___)
+
+# Verify churn rate
+ex2_train |> count(___) |> mutate(pct = n / sum(n))
+ex2_test |> count(___) |> mutate(pct = n / sum(n))
+```
+
+## Exercise 3 — Critical thinking
+
+Answer the following in 2–3 sentences each:
+
+a. A colleague says: "I looked at the test set to understand the data better
+   before modeling. I did not fit any models on it." Is this a problem?
+   Why or why not?
+
+b. You are building a fraud detection model. Only 0.1% of transactions are
+   fraudulent. Why is stratified splitting especially important here?
+
+c. A model achieves 92% accuracy on the training set and 61% accuracy on the
+   test set. What does this tell you? What would you do next?
+
+---
+
+# Resources
+
+| Resource | Link |
+|----------|------|
+| Tidy Modeling with R (free) | [tmwr.org](https://www.tmwr.org) |
+| tidymodels documentation | [tidymodels.org](https://www.tidymodels.org) |
+| rsample reference | [rsample.tidymodels.org](https://rsample.tidymodels.org) |
+| broom reference | [broom.tidymodels.org](https://broom.tidymodels.org) |
+| R for Data Science | [r4ds.hadley.nz](https://r4ds.hadley.nz) |
+
+---
+
+*IBM 6540 • Applied Machine Learning with tidymodels • Cal Poly Pomona*

@@ -1,0 +1,715 @@
+---
+title: "Introduction to Machine Learning for Marketing"
+subtitle: "Week 1 • Applied Machine Learning with tidymodels"
+author: "Jae Jung"
+institute: "IBM 6540, Cal Poly Pomona"
+date: today
+format:
+  revealjs:
+    theme: [default, cpp-brand.scss]
+    footer: "Week 1: Introduction to Machine Learning"
+    logo: images/cpp_primary_2c_green_cmyk.png
+    transition: concave
+    transition-speed: fast
+    toc: true
+    toc-depth: 1
+    toc-title: "Table of Contents"
+    number-sections: false
+    slide-number: true
+    preview-links: auto
+    incremental: false
+    code-line-numbers: true
+    code-copy: true
+    code-fold: false
+    code-overflow: wrap
+    smaller: false
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+editor: visual
+---
+
+# What is Machine Learning? {background-color="#FFB81C"}
+
+## The core idea
+
+> Machine learning is a set of methods that allow computers to **learn patterns from data** and use those patterns to make predictions or decisions on new, unseen cases.
+
+Unlike traditional programming:
+
+| Traditional programming        | Machine learning                     |
+|--------------------------------|--------------------------------------|
+| You write explicit rules       | The algorithm learns rules from data |
+| Rules → Output                 | Data + Output → Rules                |
+| Fragile when rules are complex | Scales well to complex patterns      |
+
+::: notes
+Start with the intuition. Students understand rules-based logic. The flip is the key insight.
+:::
+
+## Why does this matter for marketers?
+
+Marketing decisions are **prediction problems** in disguise:
+
+::::: columns
+::: {.column width="50%"}
+**Who should we target?**
+
+- Which customers will respond to an offer?
+- Which leads will convert?
+- Which subscribers will churn?
+:::
+
+::: {.column width="50%"}
+**What should we do?**
+
+- Which product to recommend?
+- Which message to send?
+- What price to set?
+:::
+:::::
+
+::: callout-tip
+Every time you ask *"which customers are most likely to..."*, you are describing a machine learning problem.
+:::
+
+## Prediction vs. explanation
+
+These are related but **different goals**:
+
+| Goal | Question | Example |
+|----|----|----|
+| **Explanation** | Why does X happen? | Does ad spend *cause* sales? |
+| **Prediction** | What will happen next? | Which customers will churn *next month*? |
+
+::: fragment
+- **Statistics** traditionally focuses on explanation — coefficients, significance, causality
+- **Machine learning** traditionally focuses on prediction — accuracy, generalization, new data
+:::
+
+::: callout-note
+In this course, we focus on **prediction**. The same model (e.g. linear regression) can serve both goals — the goal shapes how we use it.
+:::
+
+## TMWR Chapter 1 — Key ideas
+
+From *Tidy Modeling with R*, Chapter 1:
+
+- Models are tools for **understanding data** and **making decisions**
+- The modeling process is iterative: explore → build → evaluate → refine
+- Software shapes how you think about modeling — tidymodels encourages good habits
+
+::: callout-important
+A model is only as good as the **question it is answering** and the **data it is trained on**.
+:::
+
+::: fragment
+Before writing a single line of code, ask:
+
+1.  What is the outcome I am trying to predict?
+2.  Who will use this prediction, and how?
+3.  What data do I have, and is it appropriate?
+:::
+
+# Supervised Learning {background-color="#FFB81C"}
+
+## What is supervised learning?
+
+**Supervised learning** uses labeled data — data where the outcome is already known — to train a model that can predict that outcome for new cases.
+
+::::: columns
+::: {.column width="55%"}
+**The setup:**
+
+- You have a dataset with inputs (features) and a known output (label)
+- You train a model on this data
+- You evaluate how well it predicts on new, unseen data
+:::
+
+::: {.column width="45%"}
+**Marketing examples:**
+
+- Past campaigns with known response rates
+- Customer records with known churn status
+- Orders with known revenue amounts
+:::
+:::::
+
+::: callout-tip
+"Supervised" means the algorithm is learning from **examples with correct answers**.
+:::
+
+## Two types of supervised learning
+
+::::: columns
+::: {.column width="50%"}
+### Regression
+
+Predicts a **continuous numeric** outcome.
+
+**Examples:** - Customer lifetime value (\$) - Predicted spending amount - Weekly sales revenue - Satisfaction score (1–10) - Time until next purchase (days)
+
+**Key models:** `linear_reg()` • `rand_forest()` • `boost_tree()`
+:::
+
+::: {.column width="50%"}
+### Classification
+
+Predicts a **category or class**.
+
+**Examples:** - Will the customer churn? (yes/no) - Will a lead convert? (yes/no) - Is this review positive or negative? - Which segment does this customer belong to?
+
+**Key models:** `logistic_reg()` • `rand_forest()` • `boost_tree()`
+:::
+:::::
+
+## Regression — deeper look
+
+Regression answers: **"How much?"** or **"How many?"**
+
+``` r
+# Predict customer lifetime value
+lm_spec <- linear_reg() |>
+  set_engine("lm")
+
+lm_fit <- lm_spec |>
+  fit(lifetime_value ~ recency + frequency + monetary + tenure,
+      data = customer_train)
+```
+
+**Common evaluation metrics:**
+
+| Metric | What it measures                                    |
+|--------|-----------------------------------------------------|
+| RMSE   | Average prediction error (same units as outcome)    |
+| MAE    | Average absolute error (less sensitive to outliers) |
+| R²     | Proportion of variance explained (0 to 1)           |
+
+## Classification — deeper look
+
+Classification answers: **"Which category?"** or **"Will it happen?"**
+
+``` r
+# Predict churn (yes/no)
+lr_spec <- logistic_reg() |>
+  set_engine("glm")
+
+lr_fit <- lr_spec |>
+  fit(churn ~ recency + num_complaints + tenure + last_purchase_days,
+      data = customer_train)
+```
+
+**Common evaluation metrics:**
+
+| Metric               | What it measures                            |
+|----------------------|---------------------------------------------|
+| Accuracy             | \% of predictions correct                   |
+| Sensitivity (Recall) | \% of actual positives caught               |
+| Specificity          | \% of actual negatives correctly identified |
+| ROC AUC              | Overall discrimination ability (0.5 to 1.0) |
+
+## Supervised learning algorithms
+
+::::: columns
+::: {.column width="50%"}
+### Linear regression
+
+- Predicts numeric outcomes
+- Fast, interpretable
+- Assumes linear relationships
+- Good baseline model
+
+### Logistic regression
+
+- Predicts binary outcomes
+- Outputs probabilities
+- Interpretable coefficients
+- Great starting point for classification
+:::
+
+::: {.column width="50%"}
+### Decision trees
+
+- Splits data using if/then rules
+- Highly interpretable
+- Can overfit if too deep
+- Foundation for ensemble methods
+
+### Support Vector Machines (SVM)
+
+- Finds optimal decision boundary
+- Works well in high dimensions
+- Less interpretable
+- Good for text classification
+:::
+:::::
+
+## Ensemble methods
+
+**Random forests** and **gradient boosting** combine many weak models into one strong model:
+
+::::: columns
+::: {.column width="50%"}
+### Random Forest
+
+- Builds many decision trees
+- Each tree sees a random sample of data and features
+- Averages predictions across trees
+- Reduces overfitting dramatically
+- `rand_forest()` in tidymodels
+:::
+
+::: {.column width="50%"}
+### Gradient Boosting
+
+- Builds trees **sequentially**
+- Each tree corrects the errors of the previous one
+- Often highest accuracy in practice
+- Requires more tuning
+- `boost_tree()` in tidymodels
+:::
+:::::
+
+::: callout-tip
+For most marketing prediction problems, **random forests** and **gradient boosting** are strong default choices.
+:::
+
+## Neural networks
+
+Neural networks are loosely inspired by the human brain:
+
+- Layers of interconnected nodes learn complex, non-linear patterns
+- Very powerful for images, text, and large datasets
+- Require more data and compute than traditional models
+- Less interpretable ("black box")
+- In tidymodels: `mlp()` (multilayer perceptron)
+
+::: callout-note
+For most **tabular marketing data** (spreadsheet-style), tree-based models often perform comparably to neural networks with far less complexity. Neural networks shine with images, text, and very large datasets.
+:::
+
+# Unsupervised Learning {background-color="#FFB81C"}
+
+## What is unsupervised learning?
+
+**Unsupervised learning** works with data that has **no labeled outcome**. The algorithm finds structure, patterns, or groupings on its own.
+
+::::: columns
+::: {.column width="55%"}
+**The setup:**
+
+- You have inputs (features) but no known output
+- The algorithm discovers patterns in the data
+- You interpret what the patterns mean
+:::
+
+::: {.column width="45%"}
+**Marketing examples:**
+
+- Customer segmentation
+- Product grouping
+- Review theme discovery
+- Survey dimension reduction
+:::
+:::::
+
+::: callout-tip
+"Unsupervised" means no correct answers — the algorithm explores the data and you interpret what it finds.
+:::
+
+## Clustering
+
+Clustering groups observations that are **similar to each other** and **different from other groups**.
+
+**Marketing applications:**
+
+| Use case | What you cluster | What you get |
+|----|----|----|
+| Customer segmentation | RFM features, demographics | Actionable customer groups |
+| Product grouping | Purchase patterns, attributes | Product families |
+| Store segmentation | Sales patterns, location data | Store archetypes |
+
+::: fragment
+**Key question:** How many clusters?
+
+This is one of the hardest decisions in clustering. We use methods like the elbow plot and silhouette scores to guide the choice.
+:::
+
+## K-Means clustering
+
+K-Means is the most widely used clustering algorithm:
+
+1.  You specify **k** (number of clusters)
+2.  Algorithm assigns each observation to the nearest cluster center
+3.  Centers are recalculated
+4.  Steps 2–3 repeat until stable
+
+``` r
+library(tidymodels)
+library(tidyclust)
+
+kmeans_spec <- k_means(num_clusters = 4)
+
+kmeans_fit <- kmeans_spec |>
+  fit(~ recency + frequency + monetary, data = customer_data)
+
+customer_data |>
+  bind_cols(predict(kmeans_fit, customer_data))
+```
+
+## Hierarchical clustering
+
+Hierarchical clustering builds a **tree of clusters** (dendrogram):
+
+::::: columns
+::: {.column width="55%"}
+**How it works:**
+
+- **Agglomerative** (bottom-up): Start with each observation as its own cluster, then merge the most similar pairs
+- **Divisive** (top-down): Start with one cluster, then split
+
+**Advantages:** - No need to pre-specify k - Visual dendrogram shows structure - Can cut the tree at any level
+:::
+
+::: {.column width="45%"}
+**Marketing use:**
+
+- Understand natural customer hierarchy
+- Explore data before choosing k
+- Useful for smaller datasets
+
+**Linkage methods:** - Complete linkage - Average linkage - Ward's method (most common)
+:::
+:::::
+
+## DBSCAN
+
+DBSCAN (Density-Based Spatial Clustering of Applications with Noise) finds clusters of **arbitrary shape**:
+
+- Groups points that are **closely packed together**
+- Points in low-density regions are labeled as **noise/outliers**
+- Does not require specifying k in advance
+
+::::: columns
+::: {.column width="50%"}
+**Advantages:** - Finds non-spherical clusters - Handles outliers naturally - Does not require k
+:::
+
+::: {.column width="50%"}
+**Disadvantages:** - Requires tuning two parameters (epsilon, min_samples) - Struggles with varying density - Less common in tidymodels
+:::
+:::::
+
+::: callout-note
+For most **marketing segmentation** tasks, k-means is the practical starting point. DBSCAN is useful when you suspect non-spherical clusters or want to identify anomalous customers.
+:::
+
+## Dimensionality reduction
+
+Real marketing datasets often have **many features**. Dimensionality reduction compresses them into fewer, more meaningful dimensions.
+
+**Principal Component Analysis (PCA):**
+
+- Finds linear combinations of features that capture the most variance
+- Reduces many correlated variables into a few uncorrelated components
+- Common in marketing survey analysis and feature engineering
+
+``` r
+pca_recipe <- recipe(~ ., data = survey_data) |>
+  step_normalize(all_numeric_predictors()) |>
+  step_pca(all_numeric_predictors(), num_comp = 3)
+
+pca_prep <- prep(pca_recipe)
+pca_baked <- bake(pca_prep, new_data = NULL)
+```
+
+## Supervised vs. unsupervised — summary
+
+|   | Supervised | Unsupervised |
+|----|----|----|
+| **Labeled data needed?** | Yes | No |
+| **Goal** | Predict known outcome | Discover structure |
+| **Evaluation** | Accuracy, RMSE, AUC | Interpretability, cohesion |
+| **Marketing examples** | Churn, CLV, conversion | Segments, themes, dimensions |
+| **tidymodels tools** | `parsnip`, `workflows` | `tidyclust`, `recipes` |
+
+# Tidymodels {background-color="#FFB81C"}
+
+## What is tidymodels?
+
+**tidymodels** is a collection of R packages for modeling and machine learning that follow **tidy data principles**:
+
+- Consistent, predictable syntax across all model types
+- Integrates with the tidyverse (`dplyr`, `ggplot2`, `tibble`)
+- Separates modeling steps into clear, reusable components
+- Makes it easy to compare and switch between models
+
+::: callout-tip
+Just as the tidyverse unified data wrangling, **tidymodels unifies the modeling workflow**.
+:::
+
+Reference: <https://www.tidymodels.org/>
+
+## The tidymodels ecosystem
+
+| Workflow step        | Package     | What it does                              |
+|----------------------|-------------|-------------------------------------------|
+| Split data           | `rsample`   | Training/testing splits, cross-validation |
+| Preprocess features  | `recipes`   | Feature engineering, scaling, encoding    |
+| Specify models       | `parsnip`   | Unified model interface across engines    |
+| Combine steps        | `workflows` | Bundle recipe + model together            |
+| Evaluate performance | `yardstick` | Accuracy, RMSE, AUC, and more             |
+| Tune hyperparameters | `tune`      | Grid search, Bayesian optimization        |
+| Tidy model outputs   | `broom`     | Clean model summaries as tibbles          |
+
+## TMWR Chapter 3 — A review of R modeling fundamentals
+
+From *Tidy Modeling with R*, Chapter 3:
+
+- R has many modeling frameworks — `lm()`, `glm()`, `caret`, `mlr3` — each with different syntax
+- tidymodels provides a **unified interface** so you write code the same way regardless of the underlying algorithm
+- The **formula interface** (`outcome ~ predictor1 + predictor2`) is central to R modeling
+
+``` r
+# Base R
+lm(sales ~ ad_spend + price, data = train_data)
+
+# tidymodels (same model, consistent syntax)
+linear_reg() |>
+  set_engine("lm") |>
+  fit(sales ~ ad_spend + price, data = train_data)
+```
+
+## TMWR Chapter 5 — Spending our data budget
+
+From *Tidy Modeling with R*, Chapter 5:
+
+> We only have so much data. Every time we use data to make a modeling decision, we "spend" some of its ability to give us unbiased estimates.
+
+**The data budget:**
+
+::::: columns
+::: {.column width="50%"}
+### Training set (\~80%)
+
+- Used to fit the model
+- Used for feature engineering decisions
+- Used for hyperparameter tuning
+:::
+
+::: {.column width="50%"}
+### Testing set (\~20%)
+
+- Used **once** at the very end
+- Estimates real-world performance
+- Never used to make modeling decisions
+:::
+:::::
+
+::: callout-warning
+Using the test set more than once leads to **optimistic, misleading** performance estimates.
+:::
+
+## The initial split
+
+``` r
+library(tidymodels)
+
+set.seed(123)  # for reproducibility
+
+# Split 80% training, 20% testing
+data_split <- initial_split(customer_data, prop = 0.80)
+
+# Extract training and testing sets
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+# Check sizes
+nrow(train_data)  # ~80% of rows
+nrow(test_data)   # ~20% of rows
+```
+
+::: callout-tip
+Always set a **random seed** with `set.seed()` before splitting so your results are reproducible.
+:::
+
+## Stratified splitting
+
+When your outcome is **imbalanced** (e.g. only 5% churn), use stratified splitting to ensure both sets have similar proportions:
+
+``` r
+set.seed(123)
+
+# Stratify by the outcome variable
+data_split <- initial_split(customer_data,
+                            prop = 0.80,
+                            strata = churn)  # ensures balanced split
+
+train_data <- training(data_split)
+test_data  <- testing(data_split)
+
+# Verify churn rate is similar in both sets
+train_data |> count(churn) |> mutate(pct = n / sum(n))
+test_data  |> count(churn) |> mutate(pct = n / sum(n))
+```
+
+## The full tidymodels workflow
+
+```{mermaid}
+%%| echo: false
+flowchart LR
+  A[Marketing problem] --> B[Define outcome]
+  B --> C[Split data\nrsample]
+  C --> D[Preprocess\nrecipes]
+  D --> E[Specify model\nparsnip]
+  E --> F[Build workflow\nworkflows]
+  F --> G[Evaluate\nyardstick]
+  G --> H[Tune\ntune]
+  H --> I[Final fit\non test set]
+```
+
+::: callout-note
+We will build each step of this workflow systematically across the course. Today is the overview — by Week 10, this will feel natural.
+:::
+
+## Putting it together — a first taste
+
+``` r
+library(tidymodels)
+set.seed(123)
+
+# 1. Split
+split      <- initial_split(customer_data, prop = 0.8, strata = churn)
+train_data <- training(split)
+test_data  <- testing(split)
+
+# 2. Specify model
+lr_spec <- logistic_reg() |>
+  set_engine("glm")
+
+# 3. Fit
+lr_fit <- lr_spec |>
+  fit(churn ~ recency + frequency + tenure, data = train_data)
+
+# 4. Predict on test data
+predictions <- predict(lr_fit, test_data) |>
+  bind_cols(test_data)
+
+# 5. Evaluate
+predictions |>
+  metrics(truth = churn, estimate = .pred_class)
+```
+
+# Class Activities {background-color="#FFB81C"}
+
+## Activity 1 — Supervised or unsupervised?
+
+For each marketing scenario, identify: **(a)** supervised or unsupervised, and **(b)** if supervised, regression or classification.
+
+1.  Predict whether a customer will respond to a direct mail coupon.
+2.  Group customers based on their purchase history.
+3.  Predict next quarter's revenue for each product category.
+4.  Discover common themes across 10,000 product reviews.
+5.  Predict whether a free-trial user will convert to paid.
+6.  Reduce 50 survey items to a smaller set of dimensions.
+7.  Predict a customer's next purchase amount.
+8.  Identify which customers are behaviorally similar to your best customers.
+
+## Activity 2 — Define the outcome
+
+A retail company says:
+
+> "We want to use machine learning to improve our marketing."
+
+In small groups (10 minutes):
+
+1.  Identify **three specific prediction problems** this company could tackle
+2.  For each, define:
+    - The **outcome variable** (what are we predicting, exactly?)
+    - The **type** of problem (classification or regression)
+    - What **data** would you need?
+    - What **marketing action** would the prediction enable?
+
+::: callout-tip
+Be specific. "Improve marketing" is not a modeling problem. "Predict which customers will churn in the next 30 days" is.
+:::
+
+## Activity 3 — Data budget planning
+
+You are building a churn prediction model for a telecom company.
+
+- You have **50,000 customer records**
+- **4%** of customers churned in the past year
+
+Answer these questions:
+
+1.  How many rows would be in your training set (80/20 split)?
+2.  Why should you use **stratified** splitting here?
+3.  How many churners would you expect in the test set with stratification?
+4.  What would go wrong if you used the test set to help you choose between models?
+
+# Week 1 Takeaways {background-color="#FFB81C"}
+
+## Key concepts from today
+
+1.  **Machine learning** learns patterns from data to predict or classify new cases — it is different from traditional rule-based programming.
+
+2.  **Supervised learning** uses labeled data to predict a known outcome — either a number (regression) or a category (classification).
+
+3.  **Unsupervised learning** finds structure in data without a known outcome — clustering groups similar observations, dimensionality reduction compresses features.
+
+4.  **tidymodels** provides a consistent, tidy workflow for all modeling tasks in R — split, preprocess, specify, fit, evaluate.
+
+5.  **The data budget** matters — we split data into training and testing sets and use the test set only once to get honest performance estimates.
+
+## Coming up
+
+::::: columns
+::: {.column width="50%"}
+### For next class
+
+Read:
+
+- TMWR Chapter 5 (review)
+- TMWR Chapter 8 — Workflow basics
+
+Be ready to work with:
+
+- `initial_split()`
+- `recipe()` and `step_*()` functions
+- `workflow()`
+- Dummy variables and normalization
+:::
+
+::: {.column width="50%"}
+### Course project
+
+Start thinking about:
+
+- A marketing dataset you find interesting
+- A prediction question you want to answer
+- Possible outcome variables
+
+Good sources:
+
+- Kaggle marketing datasets
+- UCI Machine Learning Repository
+- Your own work experience
+:::
+:::::
+
+## Resources
+
+| Resource | Link |
+|----|----|
+| Tidy Modeling with R (free online) | [tmwr.org](https://www.tmwr.org) |
+| tidymodels official site | [tidymodels.org](https://www.tidymodels.org) |
+| tidymodels Get Started | [tidymodels.org/start](https://www.tidymodels.org/start/) |
+| tidyclust (unsupervised) | [tidyclust.tidymodels.org](https://tidyclust.tidymodels.org) |
+| R for Data Science (free online) | [r4ds.hadley.nz](https://r4ds.hadley.nz) |
+
+::: callout-note
+All textbook readings are free online. You do not need to purchase anything for this course.
+:::
