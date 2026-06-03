@@ -27,7 +27,8 @@ format:
     code-fold: false
     code-overflow: wrap
     code-link: true
-    code-tools: true
+    #code-tools: true
+    link-external-newwindow: true
     smaller: false
     embed-resources: true
 execute:
