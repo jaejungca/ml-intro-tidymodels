@@ -24,28 +24,26 @@ execute:
 
 # Overview
 
-This document accompanies Week 1 of IBM 6540. It covers the key ideas and
-hands-on coding from three chapters of *Tidy Modeling with R* (TMWR):
+This document accompanies Week 1 of IBM 6540. It covers the key ideas and hands-on coding from three chapters of *Tidy Modeling with R* (TMWR):
 
-- **Chapter 1** — Software for Modeling: what models are, why tidymodels exists
-- **Chapter 3** — A Review of R Modeling Fundamentals: base R modeling, the formula interface
-- **Chapter 5** — Spending Our Data: train/test splits, stratification, the data budget
+-   **Chapter 1** — Software for Modeling: what models are, why tidymodels exists
+-   **Chapter 3** — A Review of R Modeling Fundamentals: base R modeling, the formula interface
+-   **Chapter 5** — Spending Our Data: train/test splits, stratification, the data budget
 
 By the end of this lab, you should be able to:
 
-1. Describe the three types of models (descriptive, inferential, predictive)
-2. Fit a model using base R syntax and interpret its output with tidy tools
-3. Split a dataset into training and testing sets using `rsample`
-4. Explain why the data budget matters and when to use stratified splits
+1.  Describe the three types of models (descriptive, inferential, predictive)
+2.  Fit a model using base R syntax and interpret its output with tidy tools
+3.  Split a dataset into training and testing sets using `rsample`
+4.  Explain why the data budget matters and when to use stratified splits
 
----
+------------------------------------------------------------------------
 
 # Setup
 
 ## Install and load packages
 
-If you have not yet installed tidymodels, run the install line once (it is
-commented out below so it does not run every time you render):
+If you have not yet installed tidymodels, run the install line once (it is commented out below so it does not run every time you render):
 
 ```{r}
 #| label: install
@@ -65,30 +63,27 @@ Verify your tidymodels version:
 packageVersion("tidymodels")
 ```
 
----
+------------------------------------------------------------------------
 
 # TMWR Chapter 1 — Software for Modeling
 
 ## Types of models
 
-TMWR Chapter 1 introduces a useful taxonomy. Before writing any code, it is
-worth asking: **what kind of model are we building, and why?**
+TMWR Chapter 1 introduces a useful taxonomy. Before writing any code, it is worth asking: **what kind of model are we building, and why?**
 
 | Type | Goal | Example |
-|------|------|---------|
+|---------------------|---------------------|-------------------------------|
 | **Descriptive** | Illustrate or summarize data | Trend line on a chart |
 | **Inferential** | Test a hypothesis, estimate an effect | Does ad spend cause sales? |
 | **Predictive** | Generate accurate predictions for new data | Which customers will churn? |
 
-In this course, we focus on **predictive models** — but good predictive
-modeling still requires understanding your data descriptively and sometimes
-thinking carefully about inference.
+In this course, we focus on **predictive models** — but good predictive modeling still requires understanding your data descriptively and sometimes thinking carefully about inference.
 
 ## The modeling process
 
 TMWR describes modeling as an **iterative process**, not a one-shot task:
 
-```
+```         
 Exploratory data analysis
         ↓
 Feature engineering
@@ -103,15 +98,12 @@ Final model on test data
 ```
 
 ::: callout-important
-**Key principle from Chapter 1:** The test set should be used **only once** —
-at the very end — to get an honest estimate of how well the model generalizes.
-Every other evaluation should use the training data only.
+**Key principle from Chapter 1:** The test set should be used **only once** — at the very end — to get an honest estimate of how well the model generalizes. Every other evaluation should use the training data only.
 :::
 
 ## Why tidymodels?
 
-Before tidymodels, every modeling package in R had its own syntax, its own
-way of making predictions, and its own output format. Compare:
+Before tidymodels, every modeling package in R had its own syntax, its own way of making predictions, and its own output format. Compare:
 
 ```{r}
 #| label: why-tidymodels
@@ -126,25 +118,21 @@ randomForest(sale_price ~ gr_liv_area, data = ames_train)
 glmnet(x = model.matrix(~gr_liv_area, ames_train), y = ames_train$sale_price)
 ```
 
-Every package has different syntax, different prediction functions, and
-different output structures. tidymodels solves this by providing a **unified
-interface** regardless of the underlying algorithm.
+Every package has different syntax, different prediction functions, and different output structures. tidymodels solves this by providing a **unified interface** regardless of the underlying algorithm.
 
----
+------------------------------------------------------------------------
 
 # TMWR Chapter 3 — R Modeling Fundamentals
 
 ## The formula interface
 
-The `~` (tilde) operator is central to modeling in R. It creates a
-**formula** that separates the outcome from the predictors:
+The `~` (tilde) operator is central to modeling in R. It creates a **formula** that separates the outcome from the predictors:
 
-```
+```         
 outcome ~ predictor1 + predictor2 + predictor3
 ```
 
-Let's explore this with the built-in `mtcars` dataset as a warm-up before
-moving to marketing data.
+Let's explore this with the built-in `mtcars` dataset as a warm-up before moving to marketing data.
 
 ```{r}
 #| label: formula-basics
@@ -161,18 +149,16 @@ mpg_fit <- lm(mpg ~ wt + hp + cyl, data = mtcars)
 summary(mpg_fit)
 ```
 
-Notice that `summary()` gives us a lot of output, but it is not easy to work
-with programmatically — the output is printed text, not a tidy data frame.
+Notice that `summary()` gives us a lot of output, but it is not easy to work with programmatically — the output is printed text, not a tidy data frame.
 
 ## Tidying model output with `broom`
 
-The `broom` package (included in tidymodels) solves this. It provides three
-functions that turn model output into tidy tibbles:
+The `broom` package (included in tidymodels) solves this. It provides three functions that turn model output into tidy tibbles:
 
-| Function | What it returns |
-|----------|----------------|
-| `tidy()` | Coefficient-level statistics |
-| `glance()` | Model-level statistics (R², AIC, etc.) |
+| Function    | What it returns                                 |
+|-------------|-------------------------------------------------|
+| `tidy()`    | Coefficient-level statistics                    |
+| `glance()`  | Model-level statistics (R², AIC, etc.)          |
 | `augment()` | Row-level statistics (fitted values, residuals) |
 
 ```{r}
@@ -196,8 +182,7 @@ augment(mpg_fit) |>
 ```
 
 ::: callout-tip
-`tidy()`, `glance()`, and `augment()` work on many model types — not just
-`lm()`. This is one of the core benefits of the tidymodels ecosystem.
+`tidy()`, `glance()`, and `augment()` work on many model types — not just `lm()`. This is one of the core benefits of the tidymodels ecosystem.
 :::
 
 ## The formula interface — more options
@@ -261,15 +246,12 @@ augment(fit_simple) |>
 ```
 
 ::: callout-note
-**Your turn:** Try adding `hp` and `cyl` to the model. Does R² improve?
-Does the residual plot look better or worse? What does that tell you?
+**Your turn:** Try adding `hp` and `cyl` to the model. Does R² improve? Does the residual plot look better or worse? What does that tell you?
 :::
 
 ## A marketing dataset — customer churn
 
-Let's switch from `mtcars` to a more relevant marketing dataset. We will
-simulate a customer dataset that mirrors the kinds of data you would encounter
-in practice:
+Let's switch from `mtcars` to a more relevant marketing dataset. We will simulate a customer dataset that mirrors the kinds of data you would encounter in practice:
 
 ```{r}
 #| label: create-customer-data
@@ -350,12 +332,10 @@ augment(spend_fit) |>
 ```
 
 ::: callout-note
-**Your turn:** Add `num_complaints` and `last_login_days` as predictors.
-What happens to R²? Does every predictor appear significant? What might this
-tell you about the data generating process we used to simulate the data?
+**Your turn:** Add `num_complaints` and `last_login_days` as predictors. What happens to R²? Does every predictor appear significant? What might this tell you about the data generating process we used to simulate the data?
 :::
 
----
+------------------------------------------------------------------------
 
 # TMWR Chapter 5 — Spending Our Data
 
@@ -363,15 +343,12 @@ tell you about the data generating process we used to simulate the data?
 
 Chapter 5 introduces one of the most important ideas in applied ML:
 
-> *We have a finite amount of data. Every time we use data to make a modeling
-> decision, we "spend" some of its ability to give us unbiased estimates.*
+> *We have a finite amount of data. Every time we use data to make a modeling decision, we "spend" some of its ability to give us unbiased estimates.*
 
 The solution is to **split the data** before doing any modeling:
 
-- **Training set** — used for everything: exploration, feature engineering,
-  model fitting, hyperparameter tuning
-- **Test set** — used **once**, at the very end, to estimate real-world
-  performance
+-   **Training set** — used for everything: exploration, feature engineering, model fitting, hyperparameter tuning
+-   **Test set** — used **once**, at the very end, to estimate real-world performance
 
 ```{r}
 #| label: split-diagram
@@ -417,8 +394,7 @@ cat("Total:        ", nrow(customer_train) + nrow(customer_test), "\n")
 
 ## Stratified splitting
 
-Our churn variable is **imbalanced** — only about 20% of customers churn.
-A random split might give us very different churn rates in training vs. testing.
+Our churn variable is **imbalanced** — only about 20% of customers churn. A random split might give us very different churn rates in training vs. testing.
 
 First, let's see what happens without stratification:
 
@@ -474,16 +450,12 @@ customer_test |> count(churn) |> mutate(pct = round(n / sum(n) * 100, 1))
 ```
 
 ::: callout-tip
-**Rule of thumb:** Always use `strata =` when your outcome is a category with
-imbalanced classes (e.g. churn, conversion, fraud). For regression outcomes,
-stratification is less critical but can still help ensure consistent
-distributions.
+**Rule of thumb:** Always use `strata =` when your outcome is a category with imbalanced classes (e.g. churn, conversion, fraud). For regression outcomes, stratification is less critical but can still help ensure consistent distributions.
 :::
 
 ## Visualizing the split
 
-It is good practice to verify that your training and testing sets have similar
-distributions for key variables:
+It is good practice to verify that your training and testing sets have similar distributions for key variables:
 
 ```{r}
 #| label: split-viz
@@ -525,8 +497,7 @@ bind_rows(
 
 ## The validation set
 
-Sometimes you want a **third** split — a validation set — for tuning
-hyperparameters without touching the test set:
+Sometimes you want a **third** split — a validation set — for tuning hyperparameters without touching the test set:
 
 ```{r}
 #| label: validation-split
@@ -554,8 +525,7 @@ cat("Testing:    ", nrow(test_val), "rows\n")
 ```
 
 ::: callout-note
-We will use **cross-validation** (TMWR Chapter 10) as a more efficient
-alternative to a separate validation set in later weeks.
+We will use **cross-validation** (TMWR Chapter 10) as a more efficient alternative to a separate validation set in later weeks.
 :::
 
 ## ✏️ Practice 5.1 — Splitting your own data
@@ -585,11 +555,13 @@ cat("Testing rows: ", nrow(practice_test), "\n")
 # Step 5: Verify churn rates are similar in both sets
 practice_train |>
   count(churn) |>
-  mutate(pct = round(n / sum(n) * 100, 1), set = "Training") |>
+  mutate(pct = round(n / sum(n) * 100, 1), 
+         set = "Training") |>
   bind_rows(
     practice_test |>
       count(churn) |>
-      mutate(pct = round(n / sum(n) * 100, 1), set = "Testing")
+      mutate(pct = round(n / sum(n) * 100, 1), 
+             set = "Testing")
   ) |>
   select(set, churn, n, pct)
 ```
@@ -675,18 +647,14 @@ bind_rows(no_strata_results, strata_results) |>
 ```
 
 ::: callout-important
-**Takeaway:** Without stratification, some test sets may have very few (or
-even zero) instances of the rare class. This makes performance estimates
-unreliable. Always stratify when classes are imbalanced.
+**Takeaway:** Without stratification, some test sets may have very few (or even zero) instances of the rare class. This makes performance estimates unreliable. Always stratify when classes are imbalanced.
 :::
 
----
+------------------------------------------------------------------------
 
 # Putting It Together — A First End-to-End Example
 
-Now let's combine everything from Chapters 1, 3, and 5 into a simple but
-complete modeling workflow. We will use the training data only for fitting
-and save the test set for the end.
+Now let's combine everything from Chapters 1, 3, and 5 into a simple but complete modeling workflow. We will use the training data only for fitting and save the test set for the end.
 
 ## Step 1 — Split the data
 
@@ -705,9 +673,7 @@ cat("Testing: ", nrow(final_test), "rows\n")
 ## Step 2 — Explore the training data only
 
 ::: callout-warning
-All exploratory analysis should use **training data only**. If you explore the
-test set and let that influence your modeling decisions, you are leaking
-information and your final performance estimate will be optimistic.
+All exploratory analysis should use **training data only**. If you explore the test set and let that influence your modeling decisions, you are leaking information and your final performance estimate will be optimistic.
 :::
 
 ```{r}
@@ -792,41 +758,33 @@ accuracy(test_predictions, truth = churn, estimate = .pred_class)
 ```
 
 ::: callout-note
-We are using this simple threshold (0.5) for illustration. In later weeks
-we will learn how to choose thresholds based on marketing decision context
-and how to evaluate models more rigorously using resampling.
+We are using this simple threshold (0.5) for illustration. In later weeks we will learn how to choose thresholds based on marketing decision context and how to evaluate models more rigorously using resampling.
 :::
 
----
+------------------------------------------------------------------------
 
 # Chapter Summaries
 
 ## Chapter 1 takeaways
 
-- Models can be **descriptive**, **inferential**, or **predictive** — know
-  which type you need before you start
-- Good modeling software should be **consistent**, **safe**, and
-  **expressive** — tidymodels is designed with these principles
-- Modeling is an **iterative process**, not a linear one
+-   Models can be **descriptive**, **inferential**, or **predictive** — know which type you need before you start
+-   Good modeling software should be **consistent**, **safe**, and **expressive** — tidymodels is designed with these principles
+-   Modeling is an **iterative process**, not a linear one
 
 ## Chapter 3 takeaways
 
-- The R formula interface (`~`) is powerful and expressive
-- Base R model output is hard to work with — `broom` functions (`tidy()`,
-  `glance()`, `augment()`) solve this
-- tidymodels provides a **unified interface** across model types so you do
-  not need to learn different syntax for every algorithm
+-   The R formula interface (`~`) is powerful and expressive
+-   Base R model output is hard to work with — `broom` functions (`tidy()`, `glance()`, `augment()`) solve this
+-   tidymodels provides a **unified interface** across model types so you do not need to learn different syntax for every algorithm
 
 ## Chapter 5 takeaways
 
-- The **data budget**: every use of data for a decision "spends" some of its
-  ability to give unbiased estimates
-- Always split into **training** and **testing** before any modeling
-- Use **stratified splits** when outcome classes are imbalanced
-- Never use the test set more than once — doing so leads to overfitting to
-  the test data
+-   The **data budget**: every use of data for a decision "spends" some of its ability to give unbiased estimates
+-   Always split into **training** and **testing** before any modeling
+-   Use **stratified splits** when outcome classes are imbalanced
+-   Never use the test set more than once — doing so leads to overfitting to the test data
 
----
+------------------------------------------------------------------------
 
 # Exercises
 
@@ -836,13 +794,10 @@ Complete these before the next class.
 
 Using the `customer_data` dataset (before splitting):
 
-a. Fit a linear regression predicting `monthly_spend` from `tenure`,
-   `num_products`, and `region`
-b. Use `tidy()` to extract coefficients. Which predictors are significant
-   at the 0.05 level?
-c. Use `glance()` to check R². Is the model a good fit?
-d. Use `augment()` and ggplot2 to create a residual plot. Do you see any
-   patterns?
+a.  Fit a linear regression predicting `monthly_spend` from `tenure`, `num_products`, and `region`
+b.  Use `tidy()` to extract coefficients. Which predictors are significant at the 0.05 level?
+c.  Use `glance()` to check R². Is the model a good fit?
+d.  Use `augment()` and ggplot2 to create a residual plot. Do you see any patterns?
 
 ```{r}
 #| label: exercise-1
@@ -860,10 +815,9 @@ augment(___) |>
 
 Using the `customer_data` dataset:
 
-a. Create a **70/30** stratified split on `churn`
-b. Verify that the churn rate is similar in both sets
-c. Check whether the distribution of `last_login_days` looks similar in
-   training and testing
+a.  Create a **70/30** stratified split on `churn`
+b.  Verify that the churn rate is similar in both sets
+c.  Check whether the distribution of `last_login_days` looks similar in training and testing
 
 ```{r}
 #| label: exercise-2
@@ -884,28 +838,24 @@ ex2_test |> count(___) |> mutate(pct = n / sum(n))
 
 Answer the following in 2–3 sentences each:
 
-a. A colleague says: "I looked at the test set to understand the data better
-   before modeling. I did not fit any models on it." Is this a problem?
-   Why or why not?
+a.  A colleague says: "I looked at the test set to understand the data better before modeling. I did not fit any models on it." Is this a problem? Why or why not?
 
-b. You are building a fraud detection model. Only 0.1% of transactions are
-   fraudulent. Why is stratified splitting especially important here?
+b.  You are building a fraud detection model. Only 0.1% of transactions are fraudulent. Why is stratified splitting especially important here?
 
-c. A model achieves 92% accuracy on the training set and 61% accuracy on the
-   test set. What does this tell you? What would you do next?
+c.  A model achieves 92% accuracy on the training set and 61% accuracy on the test set. What does this tell you? What would you do next?
 
----
+------------------------------------------------------------------------
 
 # Resources
 
 | Resource | Link |
-|----------|------|
+|---------------------------------------------|---------------------------|
 | Tidy Modeling with R (free) | [tmwr.org](https://www.tmwr.org) |
 | tidymodels documentation | [tidymodels.org](https://www.tidymodels.org) |
 | rsample reference | [rsample.tidymodels.org](https://rsample.tidymodels.org) |
 | broom reference | [broom.tidymodels.org](https://broom.tidymodels.org) |
 | R for Data Science | [r4ds.hadley.nz](https://r4ds.hadley.nz) |
 
----
+------------------------------------------------------------------------
 
-*IBM 6540 • Applied Machine Learning with tidymodels • Cal Poly Pomona*
+*IBM 6540 • Applied Machine Learning for Marketing with tidymodels • Cal Poly Pomona*
