@@ -90,7 +90,7 @@ In this course, we focus on **applied prediction**:
 ## Statistics and machine learning overlap
 
 | Traditional statistical modeling | Machine learning |
-|----|----|
+|------------------------------------|------------------------------------|
 | Often asks: “What is the relationship?” | Often asks: “How well can we predict?” |
 | Theory and inference are central | Generalization is central |
 | Coefficients and significance often matter | Out-of-sample performance often matters |

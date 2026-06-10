@@ -54,6 +54,11 @@ If you have not yet installed tidymodels, run the install line once (it is comme
 
 library(tidymodels) # loads rsample, parsnip, recipes, workflows, yardstick, broom
 library(tidyverse) # loads dplyr, ggplot2, tidyr, readr, etc.
+
+install.packages("conflicted") # for checking function conflicts
+library(conflicted)
+conflict_prefer("filter", winner = "dplyr") # ensure we are using dplyr's filter, not stats::filter
+tidymodels_prefer(quiet = FALSE)
 ```
 
 Verify your tidymodels version:
@@ -61,6 +66,7 @@ Verify your tidymodels version:
 ```{r}
 #| label: version-check
 packageVersion("tidymodels")
+
 ```
 
 ------------------------------------------------------------------------
@@ -103,18 +109,39 @@ Final model on test data
 
 ## Why tidymodels?
 
+### Data
+
+```{r}
+#| label: why-tidymodels-data
+
+# reading data
+ames # Ames housing dataset in modeldata
+data(ames) # load the dataset
+glimpse(ames)
+dim(ames)
+library(janitor)
+ames_train <- ames |> 
+  slice(1:1000) |> 
+  clean_names() 
+```
+
 Before tidymodels, every modeling package in R had its own syntax, its own way of making predictions, and its own output format. Compare:
 
 ```{r}
 #| label: why-tidymodels
 #| eval: false
 # Base R linear model
-lm(sale_price ~ gr_liv_area, data = ames_train)
+lm(sale_price ~ gr_liv_area, data = ames_train) |> 
+  summary()
 
 # randomForest package
-randomForest(sale_price ~ gr_liv_area, data = ames_train)
+install.packages("randomForest")
+library(randomForest)
+randomForest(sale_price ~ gr_liv_area, data = ames_train) 
 
 # glmnet package (requires matrix input, not a formula)
+#install.packages("glmnet")
+library(glmnet)
 glmnet(x = model.matrix(~gr_liv_area, ames_train), y = ames_train$sale_price)
 ```
 
@@ -204,11 +231,16 @@ lm(mpg ~ wt * hp, data = mtcars) # includes wt, hp, and wt:hp
 # Explicit interaction only
 lm(mpg ~ wt + hp + wt:hp, data = mtcars)
 
+lm(mpg ~ (wt + hp)^2, data = mtcars) 
+
+# interaction only, no main effects
+lm(mpg ~ wt:hp, data = mtcars) 
+
 # Polynomial term
-lm(mpg ~ wt + I(wt^2), data = mtcars)
+lm(mpg ~ wt + I(wt^2), data = mtcars) |> summary()
 
 # Log transformation of predictor
-lm(mpg ~ log(wt) + hp, data = mtcars)
+lm(mpg ~ log(wt) + hp, data = mtcars) |> summary()
 ```
 
 ## ✏️ Practice 3.1 — Explore base R modeling
