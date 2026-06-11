@@ -55,7 +55,7 @@ If you have not yet installed tidymodels, run the install line once (it is comme
 library(tidymodels) # loads rsample, parsnip, recipes, workflows, yardstick, broom
 library(tidyverse) # loads dplyr, ggplot2, tidyr, readr, etc.
 
-install.packages("conflicted") # for checking function conflicts
+# install.packages("conflicted") # for checking function conflicts
 library(conflicted)
 conflict_prefer("filter", winner = "dplyr") # ensure we are using dplyr's filter, not stats::filter
 tidymodels_prefer(quiet = FALSE)
