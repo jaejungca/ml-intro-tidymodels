@@ -39,6 +39,29 @@ By the end of this lab, you should be able to:
 
 ------------------------------------------------------------------------
 
+# Fundamentals of Machine Learning
+
+## A Gentle Introduction to Machine Learning
+
+{{< video https://www.youtube.com/watch?v=Gv9_4yMHFhI&list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF >}}
+
+## Machine Learning Fundamentals: Cross Validation
+
+{{< video https://www.youtube.com/watch?v=fSytzGwwBVw&list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF&index=2 >}}
+
+## Machine Learning Fundamentals: The Confusion Matrix
+
+{{< video https://www.youtube.com/watch?v=Kdsp6soqA7o&list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF&index=3 >}}
+
+## Machine Learning Fundamentals: Sensitivity and Specificity
+
+{{< video https://www.youtube.com/watch?v=vP06aMoz4v8&list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF&index=4 >}}
+
+## Machine Learning Fundamentals: Bias and Variance
+
+{{< video https://www.youtube.com/watch?v=EuBBz3bI-aA&list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF&index=6 >}}
+
+
 # Setup
 
 ## Install and load packages

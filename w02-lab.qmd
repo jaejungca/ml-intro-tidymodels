@@ -1,0 +1,76 @@
+---
+title: "Week 1: Introduction to Machine Learning for Marketing"
+subtitle: "Hands-On Lab — TMWR Chapters 1, 3, and 5"
+author: "Jae Jung"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: right-body
+    toc-float: true
+    number-sections: true
+    theme: cosmo
+    code-fold: false
+    code-tools: true
+    link-external-newwindow: true
+    df-print: paged
+    embed-resources: true
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+# Setup
+
+## Install and load up packages
+
+```{r}
+#install.packages("tidymodels")
+#install.packages("broom")
+#install.packages("janitor")
+#install.packages("conflicted")
+
+library(tidymodels)
+library(broom)
+library(janitor)
+
+library(conflicted)
+tidymodels_prefer(quiet = FALSE)
+```
+
+# Ch01 - Software for Modeling
+
+## Data
+
+```{r}
+data(ames)
+glimpse(ames)
+dim(ames)
+```
+
+```{r}
+ames_train <- ames |> 
+  slice_sample(n = 1000) |> 
+  clean_names()
+```
+
+## Modeling
+
+```{r}
+# Base R linear model
+lm(sale_price ~ gr_liv_area, data = ames_train)
+
+ames_train |> 
+  lm(sale_price ~ gr_liv_area, data = _)
+
+ames_train %>% 
+  lm(sale_price ~ gr_liv_area, data = .)
+
+#ran
+
+
+
+```
+

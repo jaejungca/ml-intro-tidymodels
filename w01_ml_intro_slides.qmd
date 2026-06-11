@@ -20,7 +20,7 @@ format:
     number-depth: 3
     slide-number: true
     #chalkboard: true
-    preview-links: auto
+    preview-links: false
     incremental: false
     code-line-numbers: true
     code-copy: true
@@ -31,6 +31,7 @@ format:
     link-external-newwindow: true
     smaller: false
     embed-resources: true
+    sandbox: false
 execute:
   echo: true
   warning: false
@@ -91,9 +92,7 @@ In this course, we focus on **applied prediction**:
 
 ## Gentle Introduction to Machine Learning 
 
-<div class="video-container">
-  <iframe width="560" height="315" src="https://www.youtube.com/embed/Gv9_4yMHFhI?si=riCMYy-t6PTavMJN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-</div>
+{{< video https://www.youtube.com/watch?v=Gv9_4yMHFhI&list=PLblh5JKOoLUICTaGLRoHQDuF_7q2GfuJF >}}
 
 ## Statistics and machine learning overlap
 
