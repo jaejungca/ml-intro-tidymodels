@@ -62,17 +62,17 @@ Marketing teams constantly make allocation decisions:
 
 ::::: columns
 ::: {.column width="50%"}
-- Which customers should we target?
-- Which leads should sales prioritize?
-- Which offer is most relevant?
-- Which customers are likely to churn?
+-   Which customers should we target?
+-   Which leads should sales prioritize?
+-   Which offer is most relevant?
+-   Which customers are likely to churn?
 :::
 
 ::: {.column width="50%"}
-- What predicts campaign response?
-- What do reviews reveal about the brand?
-- Which products are similar?
-- How can we personalize responsibly?
+-   What predicts campaign response?
+-   What do reviews reveal about the brand?
+-   Which products are similar?
+-   How can we personalize responsibly?
 :::
 :::::
 
@@ -86,6 +86,14 @@ In this course, we focus on **applied prediction**:
 2.  Use data to train a model.
 3.  Evaluate whether it works on new data.
 4.  Turn predictions into marketing action.
+
+------------------------------------------------------------------------
+
+## Gentle Introduction to Machine Learning 
+
+<div class="video-container">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/Gv9_4yMHFhI?si=riCMYy-t6PTavMJN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
 
 ## Statistics and machine learning overlap
 
@@ -119,12 +127,12 @@ A company says:
 Before modeling, ask:
 
 ::: small-text
-- What exactly is the outcome?
-- Repeat purchase?
-- Subscription renewal?
-- Customer lifetime value?
-- Net Promoter Score?
-- Time until churn?
+-   What exactly is the outcome?
+-   Repeat purchase?
+-   Subscription renewal?
+-   Customer lifetime value?
+-   Net Promoter Score?
+-   Time until churn?
 :::
 
 ::: callout-tip
@@ -143,10 +151,10 @@ We have an outcome variable.
 
 Examples:
 
-- purchase / no purchase
-- churn / no churn
-- sales revenue
-- customer lifetime value
+-   purchase / no purchase
+-   churn / no churn
+-   sales revenue
+-   customer lifetime value
 :::
 
 ::: {.column width="50%"}
@@ -156,10 +164,10 @@ We do not have a target outcome.
 
 Examples:
 
-- customer segments
-- similar products
-- review themes
-- reduced dimensions
+-   customer segments
+-   similar products
+-   review themes
+-   reduced dimensions
 :::
 :::::
 
@@ -171,11 +179,11 @@ Regression predicts a **numeric** outcome.
 
 Marketing examples:
 
-- Predict customer lifetime value
-- Predict spending amount
-- Predict weekly sales
-- Predict number of future purchases
-- Predict satisfaction score
+-   Predict customer lifetime value
+-   Predict spending amount
+-   Predict weekly sales
+-   Predict number of future purchases
+-   Predict satisfaction score
 
 Common models we will encounter:
 
@@ -189,11 +197,11 @@ Classification predicts a **category**.
 
 Marketing examples:
 
-- Will the customer churn?
-- Will a lead convert?
-- Is a review positive or negative?
-- Is this customer high-value or low-value?
-- Will a subscriber open the email?
+-   Will the customer churn?
+-   Will a lead convert?
+-   Is a review positive or negative?
+-   Is this customer high-value or low-value?
+-   Will a subscriber open the email?
 
 Common outcomes: yes/no, class labels, or predicted probabilities.
 
@@ -276,9 +284,9 @@ The central question in applied ML:
 
 Key vocabulary:
 
-- **Overfitting:** model memorizes training data too closely.
-- **Underfitting:** model is too simple to capture useful patterns.
-- **Generalization:** model performs well on unseen data.
+-   **Overfitting:** model memorizes training data too closely.
+-   **Underfitting:** model is too simple to capture useful patterns.
+-   **Generalization:** model performs well on unseen data.
 
 # Model Assessment {background-color="#F2EEE8"}
 
@@ -300,19 +308,19 @@ It depends on the decision.
 ::: {.column width="50%"}
 ### Regression metrics
 
-- RMSE
-- MAE
-- R-squared
+-   RMSE
+-   MAE
+-   R-squared
 :::
 
 ::: {.column width="50%"}
 ### Classification metrics
 
-- Accuracy
-- Sensitivity / recall
-- Specificity
-- Precision
-- ROC AUC
+-   Accuracy
+-   Sensitivity / recall
+-   Specificity
+-   Precision
+-   ROC AUC
 :::
 :::::
 
@@ -388,11 +396,11 @@ sales_pred <- predict(lm_fit, sales_test)
 
 Marketing ML can be powerful, but it raises real questions:
 
-- Are we using customer data transparently?
-- Could our model treat groups unfairly?
-- Are we predicting sensitive traits indirectly?
-- Can we explain decisions to stakeholders?
-- Does personalization cross a trust boundary?
+-   Are we using customer data transparently?
+-   Could our model treat groups unfairly?
+-   Are we predicting sensitive traits indirectly?
+-   Can we explain decisions to stakeholders?
+-   Does personalization cross a trust boundary?
 
 ::: callout-question
 Discussion: Just because we can predict something about customers, should we use it?
@@ -430,18 +438,18 @@ Your project should answer a marketing prediction question.
 ::: panel-tabset
 ## Possible formats:
 
-- Predict campaign response
-- Predict churn
-- Predict sales or spending
-- Classify review sentiment
-- Segment customers
-- Score leads or prospects
+-   Predict campaign response
+-   Predict churn
+-   Predict sales or spending
+-   Classify review sentiment
+-   Segment customers
+-   Score leads or prospects
 
 ## Deliverables:
 
-- GitHub repository
-- Quarto report
-- Revealjs presentation
+-   GitHub repository
+-   Quarto report
+-   Revealjs presentation
 :::
 
 # Week 1 takeaways {background-color="#F2EEE8"}
@@ -456,14 +464,14 @@ Your project should answer a marketing prediction question.
 
 Read:
 
-- Tidy Modeling with R, Chapter 5
-- Tidy Modeling with R, Chapter 8
+-   Tidy Modeling with R, Chapter 5
+-   Tidy Modeling with R, Chapter 8
 
 Prepare to work with:
 
-- train/test splits
-- recipes
-- dummy variables
-- missing data
-- scaling
-- preprocessing workflows
+-   train/test splits
+-   recipes
+-   dummy variables
+-   missing data
+-   scaling
+-   preprocessing workflows

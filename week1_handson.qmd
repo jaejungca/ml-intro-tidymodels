@@ -66,7 +66,6 @@ Verify your tidymodels version:
 ```{r}
 #| label: version-check
 packageVersion("tidymodels")
-
 ```
 
 ------------------------------------------------------------------------
@@ -113,16 +112,15 @@ Final model on test data
 
 ```{r}
 #| label: why-tidymodels-data
-
 # reading data
 ames # Ames housing dataset in modeldata
 data(ames) # load the dataset
 glimpse(ames)
 dim(ames)
 library(janitor)
-ames_train <- ames |> 
-  slice(1:1000) |> 
-  clean_names() 
+ames_train <- ames |>
+  slice(1:1000) |>
+  clean_names()
 ```
 
 Before tidymodels, every modeling package in R had its own syntax, its own way of making predictions, and its own output format. Compare:
@@ -131,13 +129,13 @@ Before tidymodels, every modeling package in R had its own syntax, its own way o
 #| label: why-tidymodels
 #| eval: false
 # Base R linear model
-lm(sale_price ~ gr_liv_area, data = ames_train) |> 
+lm(sale_price ~ gr_liv_area, data = ames_train) |>
   summary()
 
 # randomForest package
 install.packages("randomForest")
 library(randomForest)
-randomForest(sale_price ~ gr_liv_area, data = ames_train) 
+randomForest(sale_price ~ gr_liv_area, data = ames_train)
 
 # glmnet package (requires matrix input, not a formula)
 #install.packages("glmnet")
@@ -231,10 +229,10 @@ lm(mpg ~ wt * hp, data = mtcars) # includes wt, hp, and wt:hp
 # Explicit interaction only
 lm(mpg ~ wt + hp + wt:hp, data = mtcars)
 
-lm(mpg ~ (wt + hp)^2, data = mtcars) 
+lm(mpg ~ (wt + hp)^2, data = mtcars)
 
 # interaction only, no main effects
-lm(mpg ~ wt:hp, data = mtcars) 
+lm(mpg ~ wt:hp, data = mtcars)
 
 # Polynomial term
 lm(mpg ~ wt + I(wt^2), data = mtcars) |> summary()
@@ -587,13 +585,11 @@ cat("Testing rows: ", nrow(practice_test), "\n")
 # Step 5: Verify churn rates are similar in both sets
 practice_train |>
   count(churn) |>
-  mutate(pct = round(n / sum(n) * 100, 1), 
-         set = "Training") |>
+  mutate(pct = round(n / sum(n) * 100, 1), set = "Training") |>
   bind_rows(
     practice_test |>
       count(churn) |>
-      mutate(pct = round(n / sum(n) * 100, 1), 
-             set = "Testing")
+      mutate(pct = round(n / sum(n) * 100, 1), set = "Testing")
   ) |>
   select(set, churn, n, pct)
 ```
